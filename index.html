@@ -4632,5 +4632,568 @@
             <button class="spark-modal-close" onclick="SparkApp.closeSparkModal()">知道了</button>
         </div>
     </div>
+<!-- ====================== 独立字卡组（听歌评论/影视弹幕/朋友圈动态） ====================== -->
+<script>
+// 【一起听音乐专属评论字卡】
+const musicCommentCards = [
+    "这首歌好好听",
+    "和你一起听什么都好听",
+    "这首歌让我想起了你",
+    "歌词写的好像我们",
+    "要一直一起听歌呀",
+    "你也喜欢这首吗？",
+    "听到这首歌就想到你",
+    "今天也想和你一起听歌",
+    "旋律好温柔，就像你一样",
+    "想和你听遍所有喜欢的歌",
+    "这首歌的节奏好喜欢",
+    "安安静静和你听歌真好"
+];
+
+// 【一起看影视专属弹幕字卡】
+const videoDanmakuCards = [
+    "这段好甜！",
+    "哈哈哈哈好好笑",
+    "这里我看哭了",
+    "和你一起看真开心",
+    "前方高能预警！",
+    "这一幕画面好美",
+    "想和你一直这样看下去"
+];
+
+// 【朋友圈梦角动态字卡】
+const dreamMomentCards = [
+    "今天天气很好，想和你一起出门。",
+    "刚看到一朵很像你的云。",
+    "今天也很想你。",
+    "分享一首好听的歌给你。",
+    "晚风很温柔，就像你一样。",
+    "今天的晚霞超美，拍给你看。"
+];
+</script>
+
+<!-- ====================== 全局按钮样式（和网站原有按键统一风格） ====================== -->
+<style>
+/* 主页面功能按钮容器，放在页面底部侧边 */
+.global-func-box {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 9999;
+}
+.func-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+.func-btn:hover {
+    transform: scale(1.08);
+}
+.music-btn {
+    background: linear-gradient(135deg, #ff8fb1, #ff5e88);
+}
+.video-btn {
+    background: linear-gradient(135deg, #8a7bff, #6351ff);
+}
+
+/* ========== 一起听音乐面板 网易云风格 + 自定义背景 ========== */
+.music-panel {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 330px;
+    border-radius: 18px;
+    overflow: hidden;
+    display: none;
+    z-index: 9998;
+    color: #fff;
+    /* 修改背景：替换url内图片文件名即可自定义背景 */
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.75)), url("musicBg.jpg") center/cover no-repeat;
+}
+.music-panel.show { display: block; }
+.music-head {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.music-head h3 { margin: 0; font-size: 15px; font-weight: 500; }
+.close-music {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+}
+.together-status {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.06);
+}
+.avatar-wrap { display: flex; align-items: center; gap: 6px; }
+.avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+.me-ava { background: #ff789c; }
+.dream-ava { background: #8a7bff; }
+.link-line {
+    width: 22px;
+    height: 2px;
+    background: rgba(255,255,255,0.3);
+}
+.link-line.active { background: #ff789c; animation: pulse 1.2s infinite; }
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+.connect-toggle {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: none;
+    background: #ff789c;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+}
+.connect-toggle.connected { background: #4cd160; }
+.song-info {
+    padding: 16px;
+    text-align: center;
+}
+.song-name { font-size: 16px; margin-bottom: 4px; }
+.song-singer { font-size: 12px; opacity: 0.7; margin-bottom: 10px; }
+.audio-dom { width: 100%; }
+.comment-area {
+    padding: 0 16px 16px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding-top: 10px;
+}
+.comment-title { font-size: 13px; margin-bottom: 8px; opacity: 0.9; }
+.comment-list {
+    height: 105px;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+.comment-item {
+    max-width: 82%;
+    padding: 4px 10px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+}
+.my-comment {
+    margin-left: auto;
+    background: rgba(255,120,156,0.22);
+    text-align: right;
+}
+.dream-comment {
+    margin-right: auto;
+    background: rgba(138,123,255,0.22);
+    text-align: left;
+}
+.comment-input-box {
+    display: flex;
+    gap: 6px;
+}
+.comment-input {
+    flex: 1;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: none;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    outline: none;
+}
+.comment-input::placeholder { color: rgba(255,255,255,0.5); }
+.send-comment-btn {
+    padding: 0 14px;
+    border-radius: 20px;
+    border: none;
+    background: #ff789c;
+    color: white;
+    cursor: pointer;
+}
+
+/* ========== 一起看影视面板 弹幕系统 ========== */
+.video-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 92%;
+    max-width: 620px;
+    background: #141414;
+    border-radius: 14px;
+    overflow: hidden;
+    display: none;
+    z-index: 10000;
+}
+.video-panel.show { display: block; }
+.video-head {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+    color: #fff;
+    border-bottom: 1px solid #2c2c2c;
+}
+.close-video {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+}
+.video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+}
+.video-player {
+    width: 100%;
+    height: 100%;
+}
+.danmaku-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
+.danmaku {
+    position: absolute;
+    white-space: nowrap;
+    color: #fff;
+    font-size: 14px;
+    text-shadow: 1px 1px 3px #000;
+    animation: danmakuMove 9s linear forwards;
+}
+.danmaku.dream { color: #ffc2d3; }
+@keyframes danmakuMove {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+}
+.video-bottom-bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #1f1f1f;
+}
+.dan-input {
+    flex: 1;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: none;
+    background: #333;
+    color: #fff;
+    outline: none;
+}
+.send-dan-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: none;
+    background: #8a7bff;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* ========== 朋友圈自定义背景 + 梦角动态样式 ========== */
+.moments-container {
+    /* 修改朋友圈背景：替换url内文件名 */
+    background: url("momentBg.jpg") center/cover fixed no-repeat !important;
+    background-color: #f8f8f8 !important;
+}
+.dream-moment-card {
+    background: rgba(255,255,255,0.94);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 9px rgba(0,0,0,0.07);
+}
+.like-btn {
+    border: none;
+    background: transparent;
+    color: #ff789c;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0;
+}
+.like-count {
+    font-size: 12px;
+    color: #888;
+    margin-left: 4px;
+}
+</style>
+
+<!-- 页面常驻功能按钮（一起听音乐、一起看影视） -->
+<div class="global-func-box">
+    <button class="func-btn music-btn" id="openMusicBtn">♪</button>
+    <button class="func-btn video-btn" id="openVideoBtn">▶</button>
+</div>
+
+<!-- 一起听音乐面板DOM -->
+<div class="music-panel" id="musicMainPanel">
+    <div class="music-head">
+        <h3>一起听音乐</h3>
+        <button class="close-music" id="closeMusicBtn">×</button>
+    </div>
+    <div class="together-status">
+        <div class="avatar-wrap">
+            <div class="avatar me-ava">我</div>
+            <div class="link-line" id="musicLinkLine"></div>
+            <div class="avatar dream-ava">梦角</div>
+        </div>
+        <button class="connect-toggle" id="musicConnectBtn">连接听歌</button>
+    </div>
+    <div class="song-info">
+        <div class="song-name">自定义歌曲名称</div>
+        <div class="song-singer">歌手名字</div>
+        <audio class="audio-dom" id="audioMain" src="musicFile.mp3" controls>
+    </div>
+    <div class="comment-area">
+        <div class="comment-title">听歌评论区</div>
+        <div class="comment-list" id="musicCommentList">
+            <div class="comment-item dream-comment">连接后发消息，梦角会回复你</div>
+        </div>
+        <div class="comment-input-box">
+            <input class="comment-input" id="musicCommentInput" placeholder="输入想说的话">
+            <button class="send-comment-btn" id="sendMusicComment">发送</button>
+        </div>
+    </div>
+</div>
+
+<!-- 一起看影视面板DOM -->
+<div class="video-panel" id="videoMainPanel">
+    <div class="video-head">
+        <span>一起看影视</span>
+        <button class="close-video" id="closeVideoBtn">×</button>
+    </div>
+    <div class="video-wrap">
+        <video class="video-player" id="videoMain" src="videoFile.mp4" controls></video>
+        <div class="danmaku-box" id="danmakuBox"></div>
+    </div>
+    <div class="video-bottom-bar">
+        <input class="dan-input" id="danInput" placeholder="发送弹幕">
+        <button class="send-dan-btn" id="sendDanBtn">发送</button>
+    </div>
+</div>
+
+<!-- ====================== 一起听音乐交互逻辑 ====================== -->
+<script>
+// 音乐模块元素
+const openMusicBtn = document.getElementById("openMusicBtn");
+const musicMainPanel = document.getElementById("musicMainPanel");
+const closeMusicBtn = document.getElementById("closeMusicBtn");
+const musicConnectBtn = document.getElementById("musicConnectBtn");
+const musicLinkLine = document.getElementById("musicLinkLine");
+const musicCommentList = document.getElementById("musicCommentList");
+const musicCommentInput = document.getElementById("musicCommentInput");
+const sendMusicComment = document.getElementById("sendMusicComment");
+
+let musicConnected = false;
+
+// 打开关闭音乐面板
+openMusicBtn.onclick = () => musicMainPanel.classList.add("show");
+closeMusicBtn.onclick = () => musicMainPanel.classList.remove("show");
+
+// 联机切换
+musicConnectBtn.onclick = () => {
+    if(!musicConnected) {
+        musicConnected = true;
+        musicConnectBtn.innerText = "已联机";
+        musicConnectBtn.classList.add("connected");
+        musicLinkLine.classList.add("active");
+        setTimeout(() => pushDreamMusicComment("终于可以和你一起听歌啦"), 800);
+    } else {
+        musicConnected = false;
+        musicConnectBtn.innerText = "连接听歌";
+        musicConnectBtn.classList.remove("connected");
+        musicLinkLine.classList.remove("active");
+    }
+};
+
+// 插入自己评论
+function pushMyMusicComment(text) {
+    const div = document.createElement("div");
+    div.className = "comment-item my-comment";
+    div.innerText = text;
+    musicCommentList.appendChild(div);
+    musicCommentList.scrollTop = musicCommentList.scrollHeight;
+}
+// 插入梦角评论（取自独立字卡组musicCommentCards）
+function pushDreamMusicComment(customText) {
+    const div = document.createElement("div");
+    div.className = "comment-item dream-comment";
+    if(customText) div.innerText = customText;
+    else {
+        const rnd = Math.floor(Math.random() * musicCommentCards.length);
+        div.innerText = musicCommentCards[rnd];
+    }
+    musicCommentList.appendChild(div);
+    musicCommentList.scrollTop = musicCommentList.scrollHeight;
+}
+// 发送评论
+function sendMusicMsg() {
+    const val = musicCommentInput.value.trim();
+    if(!val) return;
+    pushMyMusicComment(val);
+    musicCommentInput.value = "";
+    if(musicConnected) {
+        setTimeout(() => pushDreamMusicComment(), 1000 + Math.random() * 1500);
+    }
+}
+sendMusicComment.onclick = sendMusicMsg;
+musicCommentInput.onkeydown = e => e.key === "Enter" && sendMusicMsg();
+</script>
+
+<!-- ====================== 一起看影视弹幕交互 ====================== -->
+<script>
+const openVideoBtn = document.getElementById("openVideoBtn");
+const videoMainPanel = document.getElementById("videoMainPanel");
+const closeVideoBtn = document.getElementById("closeVideoBtn");
+const videoMain = document.getElementById("videoMain");
+const danmakuBox = document.getElementById("danmakuBox");
+const danInput = document.getElementById("danInput");
+const sendDanBtn = document.getElementById("sendDanBtn");
+
+let videoTimer = null;
+
+// 打开关闭影视面板
+openVideoBtn.onclick = () => videoMainPanel.classList.add("show");
+closeVideoBtn.onclick = () => {
+    videoMainPanel.classList.remove("show");
+    clearInterval(videoTimer);
+    videoTimer = null;
+    videoMain.pause();
+};
+
+// 发送自己弹幕
+function pushMyDanmaku(text) {
+    const div = document.createElement("div");
+    div.className = "danmaku";
+    div.innerText = text;
+    div.style.top = Math.random() * 70 + "%";
+    danmakuBox.appendChild(div);
+    setTimeout(() => div.remove(), 9000);
+}
+// 梦角自动弹幕（取自videoDanmakuCards）
+function pushDreamDanmaku() {
+    const rnd = Math.floor(Math.random() * videoDanmakuCards.length);
+    const text = videoDanmakuCards[rnd];
+    const div = document.createElement("div");
+    div.className = "danmaku dream";
+    div.innerText = text;
+    div.style.top = Math.random() * 70 + "%";
+    danmakuBox.appendChild(div);
+    setTimeout(() => div.remove(), 9000);
+}
+// 视频播放自动循环发送梦角弹幕
+videoMain.onplay = () => {
+    if(videoTimer) return;
+    videoTimer = setInterval(() => pushDreamDanmaku(), 3000 + Math.random() * 4000);
+};
+videoMain.onpause = () => {
+    clearInterval(videoTimer);
+    videoTimer = null;
+};
+// 发送弹幕按钮
+function sendDanMsg() {
+    const val = danInput.value.trim();
+    if(!val) return;
+    pushMyDanmaku(val);
+    danInput.value = "";
+}
+sendDanBtn.onclick = sendDanMsg;
+danInput.onkeydown = e => e.key === "Enter" && sendDanMsg();
+</script>
+
+<!-- ====================== 朋友圈增强：梦角自动发动态+点赞 ====================== -->
+<script>
+window.addEventListener("load", () => {
+    // 给原有动态添加点赞按钮
+    addLikeToAllMoments();
+    // 5秒后自动发布第一条梦角动态
+    setTimeout(sendNewDreamMoment, 5000);
+    // 每20~40秒随机发一条动态
+    setInterval(sendNewDreamMoment, 20000 + Math.random() * 20000);
+});
+
+// 给页面所有已有动态增加点赞功能
+function addLikeToAllMoments() {
+    const allMoments = document.querySelectorAll(".moment, .post, .feed-item, [class*='moment']");
+    allMoments.forEach(item => {
+        if(item.querySelector(".like-btn")) return;
+        const likeWrap = document.createElement("div");
+        likeWrap.style.marginTop = "8px";
+        likeWrap.innerHTML = `<button class="like-btn">♡ 点赞</button><span class="like-count">0</span>`;
+        item.appendChild(likeWrap);
+        const btn = likeWrap.querySelector(".like-btn");
+        const count = likeWrap.querySelector(".like-count");
+        let clicked = false;
+        btn.onclick = () => {
+            if(clicked) return;
+            clicked = true;
+            btn.innerText = "❤️ 已赞";
+            count.innerText = Number(count.innerText) + 1;
+            // 梦角延迟点赞
+            setTimeout(() => count.innerText = Number(count.innerText) + 1, 1200);
+        };
+    });
+}
+
+// 生成梦角新动态
+function sendNewDreamMoment() {
+    const momentList = document.querySelector(".moments-list, .feed-list, .post-list, [class*='moments']");
+    if(!momentList) return;
+    const rndText = dreamMomentCards[Math.floor(Math.random() * dreamMomentCards.length)];
+    const now = new Date();
+    const timeStr = `${now.getMonth()+1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}`;
+    const newCard = document.createElement("div");
+    newCard.className = "dream-moment-card";
+    newCard.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:#8a7bff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;">梦</div>
+            <div>
+                <div style="font-weight:500;color:#333;">梦角</div>
+                <div style="font-size:11px;color:#999;">${timeStr}</div>
+            </div>
+        </div>
+        <div style="font-size:14px;line-height:1.5;color:#333;margin-bottom:8px;">${rndText}</div>
+        <div><button class="like-btn">♡ 点赞</button><span class="like-count">1</span></div>
+    `;
+    momentList.prepend(newCard);
+    // 新动态点赞逻辑
+    const btn = newCard.querySelector(".like-btn");
+    const count = newCard.querySelector(".like-count");
+    let clicked = false;
+    btn.onclick = () => {
+        if(clicked) return;
+        clicked = true;
+        btn.innerText = "❤️ 已赞";
+        count.innerText = Number(count.innerText) + 1;
+    };
+}
+</script>
 </body>
 </html>
