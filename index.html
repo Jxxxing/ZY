@@ -4632,568 +4632,1113 @@
             <button class="spark-modal-close" onclick="SparkApp.closeSparkModal()">知道了</button>
         </div>
     </div>
-<!-- ====================== 独立字卡组（听歌评论/影视弹幕/朋友圈动态） ====================== -->
-<script>
-// 【一起听音乐专属评论字卡】
-const musicCommentCards = [
-    "这首歌好好听",
-    "和你一起听什么都好听",
-    "这首歌让我想起了你",
-    "歌词写的好像我们",
-    "要一直一起听歌呀",
-    "你也喜欢这首吗？",
-    "听到这首歌就想到你",
-    "今天也想和你一起听歌",
-    "旋律好温柔，就像你一样",
-    "想和你听遍所有喜欢的歌",
-    "这首歌的节奏好喜欢",
-    "安安静静和你听歌真好"
-];
-
-// 【一起看影视专属弹幕字卡】
-const videoDanmakuCards = [
-    "这段好甜！",
-    "哈哈哈哈好好笑",
-    "这里我看哭了",
-    "和你一起看真开心",
-    "前方高能预警！",
-    "这一幕画面好美",
-    "想和你一直这样看下去"
-];
-
-// 【朋友圈梦角动态字卡】
-const dreamMomentCards = [
-    "今天天气很好，想和你一起出门。",
-    "刚看到一朵很像你的云。",
-    "今天也很想你。",
-    "分享一首好听的歌给你。",
-    "晚风很温柔，就像你一样。",
-    "今天的晚霞超美，拍给你看。"
-];
-</script>
-
-<!-- ====================== 全局按钮样式（和网站原有按键统一风格） ====================== -->
-<style>
-/* 主页面功能按钮容器，放在页面底部侧边 */
-.global-func-box {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    z-index: 9999;
-}
-.func-btn {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: none;
-    color: #fff;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    transition: transform 0.2s;
-}
-.func-btn:hover {
-    transform: scale(1.08);
-}
-.music-btn {
-    background: linear-gradient(135deg, #ff8fb1, #ff5e88);
-}
-.video-btn {
-    background: linear-gradient(135deg, #8a7bff, #6351ff);
+<!-- ========== 新增功能样式 开始 ========== -->
+<style id="addon-custom-style">
+/* 全局变量 对齐原站暖棕风格 */
+:root {
+  --addon-primary: #b48b65;
+  --addon-bg: #f8f5f0;
+  --addon-card: #ffffff;
+  --addon-text: #3a3a3a;
+  --addon-sub: #8a8a8a;
+  --addon-radius: 16px;
+  --addon-shadow: 0 4px 20px rgba(0,0,0,0.06);
 }
 
-/* ========== 一起听音乐面板 网易云风格 + 自定义背景 ========== */
-.music-panel {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    width: 330px;
-    border-radius: 18px;
-    overflow: hidden;
-    display: none;
-    z-index: 9998;
-    color: #fff;
-    /* 修改背景：替换url内图片文件名即可自定义背景 */
-    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.75)), url("musicBg.jpg") center/cover no-repeat;
+/* 首页新增功能图标 与原站样式统一 */
+.addon-app-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border-radius: var(--addon-radius);
+  background: var(--addon-card);
+  cursor: pointer;
+  transition: 0.2s;
+  user-select: none;
 }
-.music-panel.show { display: block; }
-.music-head {
-    display: flex;
-    justify-content: space-between;
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.12);
+.addon-app-item:hover { transform: translateY(-2px); box-shadow: var(--addon-shadow); }
+.addon-app-item .icon { font-size: 28px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
+.addon-app-item span { font-size: 14px; color: var(--addon-text); }
+
+/* 悬浮音乐球 */
+.addon-music-float {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--addon-card);
+  box-shadow: var(--addon-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9999;
+  font-size: 24px;
+  transition: 0.3s;
 }
-.music-head h3 { margin: 0; font-size: 15px; font-weight: 500; }
-.close-music {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 20px;
-    cursor: pointer;
+.addon-music-float:hover { transform: scale(1.08); }
+
+/* 全屏弹窗通用 */
+.addon-modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
-.together-status {
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(255,255,255,0.06);
+.addon-modal-mask.active { display: flex; }
+.addon-modal-box {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  background: var(--addon-bg);
+  border-radius: var(--addon-radius);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
-.avatar-wrap { display: flex; align-items: center; gap: 6px; }
-.avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
+.addon-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 10;
 }
-.me-ava { background: #ff789c; }
-.dream-ava { background: #8a7bff; }
-.link-line {
-    width: 22px;
-    height: 2px;
-    background: rgba(255,255,255,0.3);
-}
-.link-line.active { background: #ff789c; animation: pulse 1.2s infinite; }
-@keyframes pulse {
-    0% { opacity: 0.4; }
-    50% { opacity: 1; }
-    100% { opacity: 0.4; }
-}
-.connect-toggle {
-    padding: 5px 12px;
-    border-radius: 20px;
-    border: none;
-    background: #ff789c;
-    color: white;
-    font-size: 12px;
-    cursor: pointer;
-}
-.connect-toggle.connected { background: #4cd160; }
-.song-info {
-    padding: 16px;
-    text-align: center;
-}
-.song-name { font-size: 16px; margin-bottom: 4px; }
-.song-singer { font-size: 12px; opacity: 0.7; margin-bottom: 10px; }
-.audio-dom { width: 100%; }
-.comment-area {
-    padding: 0 16px 16px;
-    border-top: 1px solid rgba(255,255,255,0.12);
-    padding-top: 10px;
-}
-.comment-title { font-size: 13px; margin-bottom: 8px; opacity: 0.9; }
-.comment-list {
-    height: 105px;
-    overflow-y: auto;
-    font-size: 12px;
-    line-height: 1.5;
-    margin-bottom: 8px;
-}
-.comment-item {
-    max-width: 82%;
-    padding: 4px 10px;
-    border-radius: 10px;
-    margin-bottom: 6px;
-}
-.my-comment {
-    margin-left: auto;
-    background: rgba(255,120,156,0.22);
-    text-align: right;
-}
-.dream-comment {
-    margin-right: auto;
-    background: rgba(138,123,255,0.22);
-    text-align: left;
-}
-.comment-input-box {
-    display: flex;
-    gap: 6px;
-}
-.comment-input {
-    flex: 1;
-    padding: 6px 12px;
-    border-radius: 20px;
-    border: none;
-    background: rgba(255,255,255,0.15);
-    color: white;
-    outline: none;
-}
-.comment-input::placeholder { color: rgba(255,255,255,0.5); }
-.send-comment-btn {
-    padding: 0 14px;
-    border-radius: 20px;
-    border: none;
-    background: #ff789c;
-    color: white;
-    cursor: pointer;
+.addon-bg-upload {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  z-index: 10;
+  border: none;
 }
 
-/* ========== 一起看影视面板 弹幕系统 ========== */
-.video-panel {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 92%;
-    max-width: 620px;
-    background: #141414;
-    border-radius: 14px;
-    overflow: hidden;
-    display: none;
-    z-index: 10000;
+/* ========== 一起听音乐 样式 ========== */
+.music-page-wrap {
+  flex: 1;
+  overflow-y: auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: cover;
+  background-position: center;
+  padding: 40px 24px 24px;
+  color: #fff;
 }
-.video-panel.show { display: block; }
-.video-head {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 16px;
-    color: #fff;
-    border-bottom: 1px solid #2c2c2c;
+.music-avatar-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 20px;
 }
-.close-video {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 22px;
-    cursor: pointer;
+.music-avatar-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.music-avatar-item img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
 }
-.video-wrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    background: #000;
+.music-avatar-item .name { font-weight: 500; font-size: 15px; }
+.music-connect-line {
+  flex: 1;
+  height: 1px;
+  border-bottom: 2px dashed rgba(255,255,255,0.6);
+  margin: 0 16px;
+}
+.music-status-text {
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+.music-player-card {
+  background: rgba(255,255,255,0.95);
+  border-radius: var(--addon-radius);
+  padding: 20px;
+  color: var(--addon-text);
+  margin-bottom: 20px;
+}
+.music-song-info { text-align: center; margin-bottom: 16px; }
+.music-song-info .song-name { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
+.music-song-info .artist { font-size: 13px; color: var(--addon-sub); }
+.music-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #eee;
+  border-radius: 2px;
+  cursor: pointer;
+  margin: 12px 0 8px;
+}
+.music-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--addon-primary);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+.music-time-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--addon-sub);
+}
+.music-control-btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin-top: 16px;
+}
+.music-control-btns button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--addon-text);
+  padding: 4px;
+}
+.music-control-btns .play-btn { font-size: 30px; }
+.music-upload-tip {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--addon-sub);
+  cursor: pointer;
+}
+
+/* 通用聊天气泡 */
+.addon-chat-box {
+  background: rgba(255,255,255,0.95);
+  border-radius: var(--addon-radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 280px;
+}
+.addon-chat-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.addon-msg-bubble {
+  max-width: 72%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+.addon-msg-left { align-self: flex-start; background: #f0f0f0; color: #333; }
+.addon-msg-right { align-self: flex-end; background: var(--addon-primary); color: #fff; }
+.addon-chat-input-row {
+  display: flex;
+  gap: 8px;
+}
+.addon-chat-input-row input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #eee;
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+}
+.addon-chat-input-row button {
+  padding: 0 18px;
+  border: none;
+  border-radius: 20px;
+  background: var(--addon-primary);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ========== 一起看影视 样式 ========== */
+.video-page-wrap {
+  flex: 1;
+  overflow-y: auto;
+  background: #1a1a1a;
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+.video-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  color: #fff;
+}
+.video-header .back-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+.video-header .title {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 3px;
+}
+.video-header .status {
+  font-size: 13px;
+  color: #4ade80;
 }
 .video-player {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  border-radius: 8px;
+  background: #000;
+  margin-bottom: 16px;
+  aspect-ratio: 16/9;
 }
-.danmaku-box {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    overflow: hidden;
+.video-input-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
-.danmaku {
-    position: absolute;
-    white-space: nowrap;
-    color: #fff;
-    font-size: 14px;
-    text-shadow: 1px 1px 3px #000;
-    animation: danmakuMove 9s linear forwards;
+.video-input-bar input {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #2a2a2a;
+  color: #fff;
+  outline: none;
+  font-size: 14px;
 }
-.danmaku.dream { color: #ffc2d3; }
-@keyframes danmakuMove {
-    from { transform: translateX(100%); }
-    to { transform: translateX(-100%); }
+.video-input-bar button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #333;
+  color: #fff;
+  font-size: 14px;
 }
-.video-bottom-bar {
-    display: flex;
-    gap: 8px;
-    padding: 10px 16px;
-    background: #1f1f1f;
-}
-.dan-input {
-    flex: 1;
-    padding: 6px 12px;
-    border-radius: 20px;
-    border: none;
-    background: #333;
-    color: #fff;
-    outline: none;
-}
-.send-dan-btn {
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: none;
-    background: #8a7bff;
-    color: #fff;
-    cursor: pointer;
+.video-input-bar button.primary {
+  background: var(--addon-primary);
 }
 
-/* ========== 朋友圈自定义背景 + 梦角动态样式 ========== */
-.moments-container {
-    /* 修改朋友圈背景：替换url内文件名 */
-    background: url("momentBg.jpg") center/cover fixed no-repeat !important;
-    background-color: #f8f8f8 !important;
+/* ========== 一起看小说 样式 ========== */
+.novel-page-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f5f1e8;
+  background-size: cover;
+  background-position: center;
 }
-.dream-moment-card {
-    background: rgba(255,255,255,0.94);
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 9px rgba(0,0,0,0.07);
+.novel-reader {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #3a3a3a;
 }
-.like-btn {
-    border: none;
-    background: transparent;
-    color: #ff789c;
-    cursor: pointer;
-    font-size: 13px;
-    padding: 0;
+.novel-reader textarea {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 16px;
+  line-height: 1.8;
+  resize: none;
+  color: #3a3a3a;
 }
-.like-count {
-    font-size: 12px;
-    color: #888;
-    margin-left: 4px;
+
+/* ========== 回复库 评论标签 ========== */
+.addon-comment-tab {
+  padding: 8px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  color: var(--addon-sub);
+  white-space: nowrap;
 }
+.addon-comment-tab.active {
+  border-color: var(--addon-primary);
+  color: var(--addon-primary);
+  font-weight: 500;
+}
+.addon-comment-list {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.addon-comment-item {
+  padding: 10px 12px;
+  background: var(--addon-bg);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+.addon-comment-item .del-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 13px;
+}
+.addon-comment-add-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.addon-comment-add-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+}
+.addon-comment-add-row button {
+  padding: 0 16px;
+  background: var(--addon-primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ========== 高级功能入口 ========== */
+.addon-setting-card {
+  background: var(--addon-bg);
+  border-radius: 12px;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.addon-setting-card:hover { opacity: 0.9; }
+.addon-setting-card .icon { font-size: 28px; }
+.addon-setting-card span { font-size: 14px; color: var(--addon-text); }
+
+/* ========== 朋友圈升级 ========== */
+.moments-page-wrap {
+  flex: 1;
+  overflow-y: auto;
+  background: #f2f2f2;
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  padding-top: 120px;
+}
+.moment-item {
+  background: #fff;
+  margin: 0 16px 12px;
+  border-radius: 12px;
+  padding: 16px;
+}
+.moment-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.moment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.moment-name { font-weight: 500; font-size: 15px; }
+.moment-time { font-size: 12px; color: var(--addon-sub); margin-top: 2px; }
+.moment-content { font-size: 14px; line-height: 1.6; margin-bottom: 10px; }
+.moment-img {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.moment-actions {
+  display: flex;
+  gap: 20px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 8px;
+  font-size: 13px;
+  color: var(--addon-sub);
+}
+.moment-actions span { cursor: pointer; }
+.moment-actions .liked { color: var(--addon-primary); }
 </style>
+<!-- ========== 新增功能样式 结束 ========== -->
 
-<!-- 页面常驻功能按钮（一起听音乐、一起看影视） -->
-<div class="global-func-box">
-    <button class="func-btn music-btn" id="openMusicBtn">♪</button>
-    <button class="func-btn video-btn" id="openVideoBtn">▶</button>
+<!-- ========== 功能弹窗容器 开始 ========== -->
+<div id="addon-modal-mask" class="addon-modal-mask">
+  <div class="addon-modal-box" id="addon-modal-box">
+    <button class="addon-modal-close" onclick="closeAddonModal()">✕</button>
+    <button class="addon-bg-upload" onclick="uploadBgCurrent()">更换背景</button>
+    <div id="addon-modal-content"></div>
+  </div>
 </div>
+<!-- ========== 功能弹窗容器 结束 ========== -->
 
-<!-- 一起听音乐面板DOM -->
-<div class="music-panel" id="musicMainPanel">
-    <div class="music-head">
-        <h3>一起听音乐</h3>
-        <button class="close-music" id="closeMusicBtn">×</button>
-    </div>
-    <div class="together-status">
-        <div class="avatar-wrap">
-            <div class="avatar me-ava">我</div>
-            <div class="link-line" id="musicLinkLine"></div>
-            <div class="avatar dream-ava">梦角</div>
-        </div>
-        <button class="connect-toggle" id="musicConnectBtn">连接听歌</button>
-    </div>
-    <div class="song-info">
-        <div class="song-name">自定义歌曲名称</div>
-        <div class="song-singer">歌手名字</div>
-        <audio class="audio-dom" id="audioMain" src="musicFile.mp3" controls>
-    </div>
-    <div class="comment-area">
-        <div class="comment-title">听歌评论区</div>
-        <div class="comment-list" id="musicCommentList">
-            <div class="comment-item dream-comment">连接后发消息，梦角会回复你</div>
-        </div>
-        <div class="comment-input-box">
-            <input class="comment-input" id="musicCommentInput" placeholder="输入想说的话">
-            <button class="send-comment-btn" id="sendMusicComment">发送</button>
-        </div>
-    </div>
-</div>
-
-<!-- 一起看影视面板DOM -->
-<div class="video-panel" id="videoMainPanel">
-    <div class="video-head">
-        <span>一起看影视</span>
-        <button class="close-video" id="closeVideoBtn">×</button>
-    </div>
-    <div class="video-wrap">
-        <video class="video-player" id="videoMain" src="videoFile.mp4" controls></video>
-        <div class="danmaku-box" id="danmakuBox"></div>
-    </div>
-    <div class="video-bottom-bar">
-        <input class="dan-input" id="danInput" placeholder="发送弹幕">
-        <button class="send-dan-btn" id="sendDanBtn">发送</button>
-    </div>
-</div>
-
-<!-- ====================== 一起听音乐交互逻辑 ====================== -->
+<!-- ========== 新增功能逻辑 开始 ========== -->
 <script>
-// 音乐模块元素
-const openMusicBtn = document.getElementById("openMusicBtn");
-const musicMainPanel = document.getElementById("musicMainPanel");
-const closeMusicBtn = document.getElementById("closeMusicBtn");
-const musicConnectBtn = document.getElementById("musicConnectBtn");
-const musicLinkLine = document.getElementById("musicLinkLine");
-const musicCommentList = document.getElementById("musicCommentList");
-const musicCommentInput = document.getElementById("musicCommentInput");
-const sendMusicComment = document.getElementById("sendMusicComment");
-
-let musicConnected = false;
-
-// 打开关闭音乐面板
-openMusicBtn.onclick = () => musicMainPanel.classList.add("show");
-closeMusicBtn.onclick = () => musicMainPanel.classList.remove("show");
-
-// 联机切换
-musicConnectBtn.onclick = () => {
-    if(!musicConnected) {
-        musicConnected = true;
-        musicConnectBtn.innerText = "已联机";
-        musicConnectBtn.classList.add("connected");
-        musicLinkLine.classList.add("active");
-        setTimeout(() => pushDreamMusicComment("终于可以和你一起听歌啦"), 800);
-    } else {
-        musicConnected = false;
-        musicConnectBtn.innerText = "连接听歌";
-        musicConnectBtn.classList.remove("connected");
-        musicLinkLine.classList.remove("active");
-    }
+/* ========== 全局数据存储 与原站完全隔离 ========== */
+const ADDON_STORAGE = {
+  COMMENT_CARDS: 'addon_comment_cards',
+  BG_MUSIC: 'addon_bg_music',
+  BG_VIDEO: 'addon_bg_video',
+  BG_NOVEL: 'addon_bg_novel',
+  BG_MOMENTS: 'addon_bg_moments',
+  MOMENTS_LIST: 'addon_moments_list'
 };
 
-// 插入自己评论
-function pushMyMusicComment(text) {
-    const div = document.createElement("div");
-    div.className = "comment-item my-comment";
-    div.innerText = text;
-    musicCommentList.appendChild(div);
-    musicCommentList.scrollTop = musicCommentList.scrollHeight;
-}
-// 插入梦角评论（取自独立字卡组musicCommentCards）
-function pushDreamMusicComment(customText) {
-    const div = document.createElement("div");
-    div.className = "comment-item dream-comment";
-    if(customText) div.innerText = customText;
-    else {
-        const rnd = Math.floor(Math.random() * musicCommentCards.length);
-        div.innerText = musicCommentCards[rnd];
-    }
-    musicCommentList.appendChild(div);
-    musicCommentList.scrollTop = musicCommentList.scrollHeight;
-}
-// 发送评论
-function sendMusicMsg() {
-    const val = musicCommentInput.value.trim();
-    if(!val) return;
-    pushMyMusicComment(val);
-    musicCommentInput.value = "";
-    if(musicConnected) {
-        setTimeout(() => pushDreamMusicComment(), 1000 + Math.random() * 1500);
-    }
-}
-sendMusicComment.onclick = sendMusicMsg;
-musicCommentInput.onkeydown = e => e.key === "Enter" && sendMusicMsg();
-</script>
-
-<!-- ====================== 一起看影视弹幕交互 ====================== -->
-<script>
-const openVideoBtn = document.getElementById("openVideoBtn");
-const videoMainPanel = document.getElementById("videoMainPanel");
-const closeVideoBtn = document.getElementById("closeVideoBtn");
-const videoMain = document.getElementById("videoMain");
-const danmakuBox = document.getElementById("danmakuBox");
-const danInput = document.getElementById("danInput");
-const sendDanBtn = document.getElementById("sendDanBtn");
-
-let videoTimer = null;
-
-// 打开关闭影视面板
-openVideoBtn.onclick = () => videoMainPanel.classList.add("show");
-closeVideoBtn.onclick = () => {
-    videoMainPanel.classList.remove("show");
-    clearInterval(videoTimer);
-    videoTimer = null;
-    videoMain.pause();
-};
-
-// 发送自己弹幕
-function pushMyDanmaku(text) {
-    const div = document.createElement("div");
-    div.className = "danmaku";
-    div.innerText = text;
-    div.style.top = Math.random() * 70 + "%";
-    danmakuBox.appendChild(div);
-    setTimeout(() => div.remove(), 9000);
-}
-// 梦角自动弹幕（取自videoDanmakuCards）
-function pushDreamDanmaku() {
-    const rnd = Math.floor(Math.random() * videoDanmakuCards.length);
-    const text = videoDanmakuCards[rnd];
-    const div = document.createElement("div");
-    div.className = "danmaku dream";
-    div.innerText = text;
-    div.style.top = Math.random() * 70 + "%";
-    danmakuBox.appendChild(div);
-    setTimeout(() => div.remove(), 9000);
-}
-// 视频播放自动循环发送梦角弹幕
-videoMain.onplay = () => {
-    if(videoTimer) return;
-    videoTimer = setInterval(() => pushDreamDanmaku(), 3000 + Math.random() * 4000);
-};
-videoMain.onpause = () => {
-    clearInterval(videoTimer);
-    videoTimer = null;
-};
-// 发送弹幕按钮
-function sendDanMsg() {
-    const val = danInput.value.trim();
-    if(!val) return;
-    pushMyDanmaku(val);
-    danInput.value = "";
-}
-sendDanBtn.onclick = sendDanMsg;
-danInput.onkeydown = e => e.key === "Enter" && sendDanMsg();
-</script>
-
-<!-- ====================== 朋友圈增强：梦角自动发动态+点赞 ====================== -->
-<script>
-window.addEventListener("load", () => {
-    // 给原有动态添加点赞按钮
-    addLikeToAllMoments();
-    // 5秒后自动发布第一条梦角动态
-    setTimeout(sendNewDreamMoment, 5000);
-    // 每20~40秒随机发一条动态
-    setInterval(sendNewDreamMoment, 20000 + Math.random() * 20000);
-});
-
-// 给页面所有已有动态增加点赞功能
-function addLikeToAllMoments() {
-    const allMoments = document.querySelectorAll(".moment, .post, .feed-item, [class*='moment']");
-    allMoments.forEach(item => {
-        if(item.querySelector(".like-btn")) return;
-        const likeWrap = document.createElement("div");
-        likeWrap.style.marginTop = "8px";
-        likeWrap.innerHTML = `<button class="like-btn">♡ 点赞</button><span class="like-count">0</span>`;
-        item.appendChild(likeWrap);
-        const btn = likeWrap.querySelector(".like-btn");
-        const count = likeWrap.querySelector(".like-count");
-        let clicked = false;
-        btn.onclick = () => {
-            if(clicked) return;
-            clicked = true;
-            btn.innerText = "❤️ 已赞";
-            count.innerText = Number(count.innerText) + 1;
-            // 梦角延迟点赞
-            setTimeout(() => count.innerText = Number(count.innerText) + 1, 1200);
-        };
-    });
+// 初始化默认评论字卡
+function initDefaultComments() {
+  if (!localStorage.getItem(ADDON_STORAGE.COMMENT_CARDS)) {
+    const defaults = [
+      { text: '这首歌好好听！', type: 'music' },
+      { text: '旋律好戳我', type: 'music' },
+      { text: '循环播放了', type: 'music' },
+      { text: '这里剧情好绝', type: 'video' },
+      { text: '男主也太帅了吧', type: 'video' },
+      { text: '这段好好笑', type: 'video' },
+      { text: '尊嘟假嘟', type: 'all' },
+      { text: '泰裤辣', type: 'all' },
+      { text: '谁懂啊', type: 'all' },
+      { text: '今天天气好好', type: 'moment' },
+      { text: '摸鱼ing', type: 'moment' }
+    ];
+    localStorage.setItem(ADDON_STORAGE.COMMENT_CARDS, JSON.stringify(defaults));
+  }
+  if (!localStorage.getItem(ADDON_STORAGE.MOMENTS_LIST)) {
+    const defaultMoments = [
+      {
+        id: 1,
+        name: '梦角',
+        avatar: 'https://picsum.photos/id/65/100/100',
+        time: '10分钟前',
+        content: '今天路过一家花店，看到了超好看的向日葵～',
+        img: 'https://picsum.photos/id/106/600/400',
+        liked: false,
+        comments: []
+      }
+    ];
+    localStorage.setItem(ADDON_STORAGE.MOMENTS_LIST, JSON.stringify(defaultMoments));
+  }
 }
 
-// 生成梦角新动态
-function sendNewDreamMoment() {
-    const momentList = document.querySelector(".moments-list, .feed-list, .post-list, [class*='moments']");
-    if(!momentList) return;
-    const rndText = dreamMomentCards[Math.floor(Math.random() * dreamMomentCards.length)];
-    const now = new Date();
-    const timeStr = `${now.getMonth()+1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}`;
-    const newCard = document.createElement("div");
-    newCard.className = "dream-moment-card";
-    newCard.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:#8a7bff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;">梦</div>
-            <div>
-                <div style="font-weight:500;color:#333;">梦角</div>
-                <div style="font-size:11px;color:#999;">${timeStr}</div>
-            </div>
-        </div>
-        <div style="font-size:14px;line-height:1.5;color:#333;margin-bottom:8px;">${rndText}</div>
-        <div><button class="like-btn">♡ 点赞</button><span class="like-count">1</span></div>
-    `;
-    momentList.prepend(newCard);
-    // 新动态点赞逻辑
-    const btn = newCard.querySelector(".like-btn");
-    const count = newCard.querySelector(".like-count");
-    let clicked = false;
-    btn.onclick = () => {
-        if(clicked) return;
-        clicked = true;
-        btn.innerText = "❤️ 已赞";
-        count.innerText = Number(count.innerText) + 1;
+// 获取评论字卡
+function getCommentCards(type = 'all') {
+  const all = JSON.parse(localStorage.getItem(ADDON_STORAGE.COMMENT_CARDS) || '[]');
+  if (type === 'all') return all;
+  return all.filter(c => c.type === type || c.type === 'all');
+}
+
+// 随机抽取评论
+function getRandomComment(type = 'all') {
+  const list = getCommentCards(type);
+  if (list.length === 0) return '嗯...';
+  return list[Math.floor(Math.random() * list.length)].text;
+}
+
+// 添加评论
+function addCommentCard(text, type = 'all') {
+  const all = JSON.parse(localStorage.getItem(ADDON_STORAGE.COMMENT_CARDS) || '[]');
+  all.push({ text, type });
+  localStorage.setItem(ADDON_STORAGE.COMMENT_CARDS, JSON.stringify(all));
+}
+
+// 删除评论
+function deleteCommentCard(index) {
+  const all = JSON.parse(localStorage.getItem(ADDON_STORAGE.COMMENT_CARDS) || '[]');
+  all.splice(index, 1);
+  localStorage.setItem(ADDON_STORAGE.COMMENT_CARDS, JSON.stringify(all));
+}
+
+/* ========== 弹窗通用方法 ========== */
+let currentModalType = '';
+function openAddonModal(type, content) {
+  currentModalType = type;
+  document.getElementById('addon-modal-content').innerHTML = content;
+  document.getElementById('addon-modal-mask').classList.add('active');
+  loadPageBg(type);
+}
+function closeAddonModal() {
+  document.getElementById('addon-modal-mask').classList.remove('active');
+  document.getElementById('addon-modal-content').innerHTML = '';
+  // 停止音视频
+  const audio = document.getElementById('addon-audio');
+  const video = document.getElementById('addon-video');
+  if (audio) audio.pause();
+  if (video) video.pause();
+  currentModalType = '';
+}
+
+// 背景设置
+function loadPageBg(type) {
+  const bgKey = {
+    music: ADDON_STORAGE.BG_MUSIC,
+    video: ADDON_STORAGE.BG_VIDEO,
+    novel: ADDON_STORAGE.BG_NOVEL,
+    moments: ADDON_STORAGE.BG_MOMENTS
+  }[type];
+  if (!bgKey) return;
+  const bg = localStorage.getItem(bgKey);
+  const wrap = document.querySelector('.addon-modal-box > div:nth-child(3)');
+  if (bg && wrap) {
+    wrap.style.backgroundImage = `url(${bg})`;
+  }
+}
+
+function uploadBgCurrent() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = (e) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const bgKey = {
+        music: ADDON_STORAGE.BG_MUSIC,
+        video: ADDON_STORAGE.BG_VIDEO,
+        novel: ADDON_STORAGE.BG_NOVEL,
+        moments: ADDON_STORAGE.BG_MOMENTS
+      }[currentModalType];
+      if (bgKey) {
+        localStorage.setItem(bgKey, ev.target.result);
+        loadPageBg(currentModalType);
+      }
     };
+    reader.readAsDataURL(e.target.files[0]);
+  };
+  input.click();
 }
+
+/* ========== 1. 注入首页功能入口 ========== */
+function injectHomeEntries() {
+  // 监听功能网格渲染
+  const observer = new MutationObserver(() => {
+    const appGrid = document.querySelector('[class*="grid"], .function-grid, .app-list');
+    if (!appGrid || document.getElementById('addon-music-entry')) return;
+
+    const entries = [
+      { id: 'addon-music-entry', icon: '🎵', name: '一起听音乐', action: openMusicPage },
+      { id: 'addon-video-entry', icon: '🎬', name: '一起看影视', action: openVideoPage },
+      { id: 'addon-novel-entry', icon: '📖', name: '一起看小说', action: openNovelPage },
+      { id: 'addon-moments-entry', icon: '💬', name: '朋友圈', action: openMomentsPage }
+    ];
+
+    entries.forEach(item => {
+      const div = document.createElement('div');
+      div.id = item.id;
+      div.className = 'addon-app-item';
+      div.innerHTML = `<div class="icon">${item.icon}</div><span>${item.name}</span>`;
+      div.addEventListener('click', item.action);
+      appGrid.appendChild(div);
+    });
+
+    // 注入悬浮音乐球
+    const floatBtn = document.createElement('div');
+    floatBtn.className = 'addon-music-float';
+    floatBtn.textContent = '🎵';
+    floatBtn.title = '一起听音乐';
+    floatBtn.addEventListener('click', openMusicPage);
+    document.body.appendChild(floatBtn);
+  });https://jxxxing.github.io/ZY/
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+/* ========== 2. 注入高级功能-评论弹幕管理入口 ========== */
+function injectSettingEntry() {
+  const observer = new MutationObserver(() => {
+    const advancedPanel = document.querySelector('[class*="高级"], .advanced-panel, .tool-grid');
+    if (!advancedPanel || document.getElementById('addon-comment-manage-entry')) return;
+
+    const card = document.createElement('div');
+    card.id = 'addon-comment-manage-entry';
+    card.className = 'addon-setting-card';
+    card.innerHTML = `<div class="icon">💬</div><span>评论弹幕管理</span>`;
+    card.addEventListener('click', () => {
+      // 打开回复库并切到评论标签
+      const replyLibBtn = document.querySelector('[data-tab="reply"], [class*="回复库"]');
+      if (replyLibBtn) replyLibBtn.click();
+      setTimeout(() => {
+        const tab = document.querySelector('.addon-comment-tab');
+        if (tab) tab.click();
+      }, 300);
+    });
+    advancedPanel.appendChild(card);
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+/* ========== 3. 注入回复库-评论标签 ========== */
+function injectCommentTab() {
+  const observer = new MutationObserver(() => {
+    const tabBar = document.querySelector('[class*="tab"], .reply-tabs, .tab-list');
+    if (!tabBar || document.querySelector('.addon-comment-tab')) return;
+
+    const tab = document.createElement('div');
+    tab.className = 'addon-comment-tab';
+    tab.textContent = '评论';
+    tab.addEventListener('click', () => {
+      // 切换标签状态
+      tabBar.querySelectorAll('.tab-item, .addon-comment-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderCommentLibrary();
+    });
+    tabBar.appendChild(tab);
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function renderCommentLibrary() {
+  const contentArea = document.querySelector('.tab-content, .reply-content, .tab-panel');
+  if (!contentArea) return;
+
+  const comments = getCommentCards();
+  contentArea.innerHTML = `
+    <div class="addon-comment-list">
+      <div class="addon-comment-add-row">
+        <input type="text" id="addon-new-comment" placeholder="输入新的评论话术">
+        <button onclick="handleAddComment()">添加</button>
+      </div>
+      ${comments.length === 0 
+        ? '<p style="text-align:center; color:#999; padding:40px 0;">列表空空如也</p>' 
+        : comments.map((c, i) => `
+          <div class="addon-comment-item">
+            <span>${c.text} <small style="color:#999;">[${c.type}]</small></span>
+            <button class="del-btn" onclick="handleDelComment(${i})">删除</button>
+          </div>
+        `).join('')
+      }
+      <p style="font-size:12px; color:#999; margin-top:8px;">类型说明：music=听歌用 / video=影视用 / all=通用</p>
+    </div>
+  `;
+}
+
+function handleAddComment() {
+  const input = document.getElementById('addon-new-comment');
+  const text = input.value.trim();
+  if (!text) return;
+  addCommentCard(text, 'all');
+  renderCommentLibrary();
+  input.value = '';
+}
+
+function handleDelComment(index) {
+  deleteCommentCard(index);
+  renderCommentLibrary();
+}
+
+/* ========== 4. 一起听音乐页面 ========== */
+let autoMusicTimer = null;
+function openMusicPage() {
+  const html = `
+    <div class="music-page-wrap">
+      <div class="music-avatar-row">
+        <div class="music-avatar-item">
+          <img src="https://picsum.photos/id/64/200/200" alt="我">
+          <span class="name">小雨</span>
+        </div>
+        <div class="music-connect-line"></div>
+        <div class="music-avatar-item">
+          <img src="https://picsum.photos/id/65/200/200" alt="梦角">
+          <span class="name">下雨</span>
+        </div>
+      </div>
+      <div class="music-status-text">相距 13.14 公里 · 一起听了 520小时14分钟</div>
+
+      <div class="music-player-card">
+        <div class="music-song-info">
+          <div class="song-name">你是下雨时的屋檐</div>
+          <div class="artist">方大同 / 麦恩莉</div>
+        </div>
+        <div class="music-progress-bar" id="addon-music-progress">
+          <div class="music-progress-fill" id="addon-music-fill"></div>
+        </div>
+        <div class="music-time-row">
+          <span id="addon-music-cur">0:53</span>
+          <span id="addon-music-total">4:03</span>
+        </div>
+        <div class="music-control-btns">
+          <button>⏮</button>
+          <button class="play-btn" id="addon-music-play">▶</button>
+          <button>⏭</button>
+        </div>
+        <div class="music-upload-tip" onclick="document.getElementById('addon-music-file').click()">
+          📁 点击上传本地音乐
+          <input type="file" id="addon-music-file" accept="audio/*" style="display:none;">
+        </div>
+      </div>
+
+      <div class="addon-chat-box">
+        <div class="addon-chat-list" id="addon-music-chat">
+          <div class="addon-msg-bubble addon-msg-right">我的世界下雨了</div>
+          <div class="addon-msg-bubble addon-msg-left">不是下雨</div>
+          <div class="addon-msg-bubble addon-msg-left">是我找不到别的办法去拥抱你</div>
+        </div>
+        <div class="addon-chat-input-row">
+          <input type="text" id="addon-music-input" placeholder="说点什么...">
+          <button onclick="sendMusicMsg()">发送</button>
+        </div>
+      </div>
+    </div>
+    <audio id="addon-audio">
+  `;
+  openAddonModal('music', html);
+  initMusicPlayer();
+  startAutoMusicReply();
+}
+
+function initMusicPlayer() {
+  const audio = document.getElementById('addon-audio');
+  const playBtn = document.getElementById('addon-music-play');
+  const fill = document.getElementById('addon-music-fill');
+  const cur = document.getElementById('addon-music-cur');
+  const total = document.getElementById('addon-music-total');
+  const progress = document.getElementById('addon-music-progress');
+  const fileInput = document.getElementById('addon-music-file');
+
+  playBtn.addEventListener('click', () => {
+    if (!audio.src) {
+      fileInput.click();
+      return;
+    }
+    if (audio.paused) {
+      audio.play();
+      playBtn.textContent = '⏸';
+    } else {
+      audio.pause();
+      playBtn.textContent = '▶';
+    }
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    const percent = (audio.currentTime / audio.duration) * 100 || 0;
+    fill.style.width = percent + '%';
+    cur.textContent = formatTime(audio.currentTime);
+  });
+
+  audio.addEventListener('loadedmetadata', () => {
+    total.textContent = formatTime(audio.duration);
+  });
+
+  progress.addEventListener('click', (e) => {
+    if (!audio.duration) return;
+    const rect = progress.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = percent * audio.duration;
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    const url = URL.createObjectURL(e.target.files[0]);
+    audio.src = url;
+    audio.play();
+    playBtn.textContent = '⏸';
+  });
+}
+
+function formatTime(sec) {
+  if (isNaN(sec)) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function sendMusicMsg() {
+  const input = document.getElementById('addon-music-input');
+  const text = input.value.trim();
+  if (!text) return;
+  appendMsg('addon-music-chat', text, 'right');
+  input.value = '';
+  setTimeout(() => {
+    appendMsg('addon-music-chat', getRandomComment('music'), 'left');
+  }, 1000 + Math.random() * 2000);
+}
+
+function startAutoMusicReply() {
+  if (autoMusicTimer) clearInterval(autoMusicTimer);
+  autoMusicTimer = setInterval(() => {
+    const audio = document.getElementById('addon-audio');
+    if (audio && !audio.paused && Math.random() > 0.7) {
+      appendMsg('addon-music-chat', getRandomComment('music'), 'left');
+    }
+  }, 30000);
+}
+
+function appendMsg(boxId, text, side) {
+  const box = document.getElementById(boxId);
+  if (!box || !text) return;
+  const div = document.createElement('div');
+  div.className = `addon-msg-bubble addon-msg-${side}`;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+/* ========== 5. 一起看影视页面 ========== */
+let autoVideoTimer = null;
+function openVideoPage() {
+  const html = `
+    <div class="video-page-wrap">
+      <div class="video-header">
+        <button class="back-btn">← 返回</button>
+        <div class="title">CINEMA MUSE</div>
+        <div class="status">● 角色已同步</div>
+      </div>
+
+      <video class="video-player" id="addon-video" controls></video>
+
+      <div class="video-input-bar">
+        <input type="text" id="addon-video-url" placeholder="输入视频直链 (.mp4)">
+        <button onclick="loadVideoUrl()">加载链接</button>
+        <button onclick="loadSampleVideo()">示例视频</button>
+        <button class="primary" onclick="document.getElementById('addon-video-file').click()">本地上传</button>
+        <input type="file" id="addon-video-file" accept="video/mp4" style="display:none;">
+      </div>
+
+      <div class="addon-chat-box">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+          <img src="https://picsum.photos/id/1005/100/100" style="width:36px; height:36px; border-radius:50%;">
+          <span style="font-weight:500; font-size:14px;">欧巴</span>
+        </div>
+        <div class="addon-chat-list" id="addon-video-chat">
+          <div class="addon-msg-bubble addon-msg-left">欧巴 已上线。陪你一起看。</div>
+        </div>
+        <div class="addon-chat-input-row">
+          <input type="text" id="addon-video-input" placeholder="输入消息...">
+          <button onclick="sendVideoMsg()">发送</button>
+        </div>
+      </div>
+    </div>
+  `;
+  openAddonModal('video', html);
+  initVideoPlayer();
+  startAutoVideoReply();
+}
+
+function loadVideoUrl() {
+  const url = document.getElementById('addon-video-url').value.trim();
+  if (!url) return;
+  const video = document.getElementById('addon-video');
+  video.src = url;
+  video.play();
+  appendMsg('addon-video-chat', '本地媒体源已同步。', 'left');
+}
+
+function loadSampleVideo() {
+  const video = document.getElementById('addon-video');
+  video.src = 'https://www.w3schools.com/html/mov_bbb.mp4';
+  video.play();
+  appendMsg('addon-video-chat', '开始播放啦～', 'left');
+}
+
+function initVideoPlayer() {
+  document.getElementById('addon-video-file').addEventListener('change', (e) => {
+    const url = URL.createObjectURL(e.target.files[0]);
+    const video = document.getElementById('addon-video');
+    video.src = url;
+    video.play();
+    appendMsg('addon-video-chat', '本地媒体源已同步。', 'left');
+  });
+}
+
+function sendVideoMsg() {
+  const input = document.getElementById('addon-video-input');
+  const text = input.value.trim();
+  if (!text) return;
+  appendMsg('addon-video-chat', text, 'right');
+  input.value = '';
+  setTimeout(() => {
+    appendMsg('addon-video-chat', getRandomComment('video'), 'left');
+  }, 800 + Math.random() * 1500);
+}
+
+function startAutoVideoReply() {
+  if (autoVideoTimer) clearInterval(autoVideoTimer);
+  autoVideoTimer = setInterval(() => {
+    const video = document.getElementById('addon-video');
+    if (video && !video.paused && Math.random() > 0.6) {
+      appendMsg('addon-video-chat', getRandomComment('video'), 'left');
+    }
+  }, 45000);
+}
+
+/* ========== 6. 一起看小说页面 ========== */
+let autoNovelTimer = null;
+function openNovelPage() {
+  const html = `
+    <div class="novel-page-wrap">
+      <div class="novel-reader" id="addon-novel-reader">
+        <textarea placeholder="在这里粘贴小说内容，梦角会陪你一起看..."></textarea>
+      </div>
+      <div class="addon-chat-box" style="border-top: 1px solid #e5e0d5;">
+        <div class="addon-chat-list" id="addon-novel-chat">
+          <div class="addon-msg-bubble addon-msg-left">准备好了～开始看吧！</div>
+        </div>
+        <div class="addon-chat-input-row">
+          <input type="text" id="addon-novel-input" placeholder="吐槽一下剧情...">
+          <button onclick="sendNovelMsg()">发送</button>
+        </div>
+      </div>
+    </div>
+  `;
+  openAddonModal('novel', html);
+  startAutoNovelReply();
+}
+
+function sendNovelMsg() {
+  const input = document.getElementById('addon-novel-input');
+  const text = input.value.trim();
+  if (!text) return;
+  appendMsg('addon-novel-chat', text, 'right');
+  input.value = '';
+  setTimeout(() => {
+    appendMsg('addon-novel-chat', getRandomComment('all'), 'left');
+  }, 1000 + Math.random() * 2000);
+}
+
+function startAutoNovelReply() {
+  if (autoNovelTimer) clearInterval(autoNovelTimer);
+  autoNovelTimer = setInterval(() => {
+    if (Math.random() > 0.7) {
+      appendMsg('addon-novel-chat', getRandomComment('all'), 'left');
+    }
+  }, 60000);
+}
+
+/* ========== 7. 朋友圈功能 ========== */
+function openMomentsPage() {
+  const moments = JSON.parse(localStorage.getItem(ADDON_STORAGE.MOMENTS_LIST) || '[]');
+  const html = `
+    <div class="moments-page-wrap" id="addon-moments-wrap">
+      ${moments.map(m => `
+        <div class="moment-item">
+          <div class="moment-header">
+            <img class="moment-avatar" src="${m.avatar}" alt="">
+            <div>
+              <div class="moment-name">${m.name}</div>
+              <div class="moment-time">${m.time}</div>
+            </div>
+          </div>
+          <div class="moment-content">${m.content}</div>
+          ${m.img ? `<img class="moment-img" src="${m.img}" alt="">` : ''}
+          <div class="moment-actions">
+            <span class="${m.liked ? 'liked' : ''}" onclick="toggleLike(${m.id})">${m.liked ? '❤ 已赞' : '♡ 点赞'}</span>
+            <span>💬 评论</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  openAddonModal('moments', html);
+  // 模拟梦角主动发动态
+  scheduleAutoMoment();
+}
+
+function toggleLike(id) {
+  const moments = JSON.parse(localStorage.getItem(ADDON_STORAGE.MOMENTS_LIST) || '[]');
+  const item = moments.find(m => m.id === id);
+  if (item) {
+    item.liked = !item.liked;
+    localStorage.setItem(ADDON_STORAGE.MOMENTS_LIST, JSON.stringify(moments));
+    openMomentsPage();
+  }
+}
+
+function scheduleAutoMoment() {
+  // 每次打开有概率新增一条动态
+  if (Math.random() > 0.7) {
+    setTimeout(() => {
+      const moments = JSON.parse(localStorage.getItem(ADDON_STORAGE.MOMENTS_LIST) || '[]');
+      const newMoment = {
+        id: Date.now(),
+        name: '梦角',
+        avatar: 'https://picsum.photos/id/65/100/100',
+        time: '刚刚',
+        content: getRandomComment('moment'),
+        img: Math.random() > 0.5 ? `https://picsum.photos/id/${Math.floor(Math.random()*100)}/600/400` : '',
+        liked: false,
+        comments: []
+      };
+      moments.unshift(newMoment);
+      localStorage.setItem(ADDON_STORAGE.MOMENTS_LIST, JSON.stringify(moments));
+      // 刷新页面
+      const wrap = document.getElementById('addon-moments-wrap');
+      if (wrap) {
+        wrap.insertAdjacentHTML('afterbegin', `
+          <div class="moment-item" style="animation: fadeIn 0.5s;">
+            <div class="moment-header">
+              <img class="moment-avatar" src="${newMoment.avatar}" alt="">
+              <div>
+                <div class="moment-name">${newMoment.name}</div>
+                <div class="moment-time">${newMoment.time}</div>
+              </div>
+            </div>
+            <div class="moment-content">${newMoment.content}</div>
+            ${newMoment.img ? `<img class="moment-img" src="${newMoment.img}" alt="">` : ''}
+            <div class="moment-actions">
+              <span onclick="toggleLike(${newMoment.id})">♡ 点赞</span>
+              <span>💬 评论</span>
+            </div>
+          </div>
+        `);
+      }
+    }, 5000);
+  }
+}
+
+/* ========== 初始化执行 ========== */
+document.addEventListener('DOMContentLoaded', () => {
+  initDefaultComments();
+  injectHomeEntries();
+  injectSettingEntry();
+  injectCommentTab();
+
+  // 回车发送消息
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    if (document.getElementById('addon-music-input') === document.activeElement) sendMusicMsg();
+    if (document.getElementById('addon-video-input') === document.activeElement) sendVideoMsg();
+    if (document.getElementById('addon-novel-input') === document.activeElement) sendNovelMsg();
+  });
+
+  // 点击遮罩关闭弹窗
+  document.getElementById('addon-modal-mask').addEventListener('click', (e) => {
+    if (e.target.id === 'addon-modal-mask') closeAddonModal();
+  });
+});
 </script>
+<!-- ========== 新增功能逻辑 结束 ========== -->
 </body>
 </html>
